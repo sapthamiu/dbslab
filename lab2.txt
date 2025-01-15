@@ -1,0 +1,62 @@
+7. 
+ALTER TABLE Employee ADD CONSTRAINT fk_dno FOREIGN KEY (DNo) REFERENCES    
+Department(DeptNo) ON DELETE CASCADE;
+
+9. 
+select name, dept_name from student;
+
+10. 
+select name from instructor where dept_name = 'Comp. Sci.';
+
+11. 
+select title from course where credits = 3;
+
+12.
+select course.course_id, title from course, takes where takes.id = 12345 and takes.course_id = course.course_id;
+
+13.
+select * from instructor where salary > 40000 and salary < 90000;
+
+14. 
+(select id from instructor where id not in(select id from teaches);
+
+15.
+select 
+	(select name from student where student.id = takes.id) student_name, 
+	(select title from course where course.course_id = section.course_id) course_name, 
+	section.year 
+from takes, section, classroom 
+where 	takes.course_id = section.course_id 
+	and takes.sec_id = section.sec_id 
+	and takes.semester = section.semester 
+	and takes.year = section.year 
+	and section.building = classroom.building 
+	and section.room_number = classroom.room_number 
+	and classroom.room_number = 101;
+
+16.
+select name, takes.course_id, title "c-name"    from student, takes, course where takes.year = 2010 and student.id = takes.id and takes.course_id = course.course_id;
+
+17.
+select distinct t1.name, t1.salary "inst-salary" from instructor t1, instructor t2 where t1.salary >
+ t2.salary and t2.dept_name = 'Comp. Sci.';
+
+18. 
+select name from instructor where dept_name like '%ch%';
+
+19. 
+select name, length(name) from student;
+
+20.
+select dept_name, substr(dept_name, 3,3) from department;
+
+21.
+select upper(name) as name from instructor;
+
+22.
+SELECT ID, course_id, NVL(grade, 0) grade FROM takes where grade is null;
+
+
+select sysdate from dual; //15-jan-25
+select table_name from user_tables;
+
