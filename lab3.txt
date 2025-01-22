@@ -1,0 +1,48 @@
+1.
+(select course_id from section where semester = 'Fall' and year = 2009) union (select course_id from section where semester = 'Spring' and year = 2010);
+
+2.
+(select course_id from section where semester = 'Fall' and year = 2009) intersect (select course_id from section where semester = 'Spring' and year = 2010);
+
+3.
+(select course_id from section where semester = 'Fall' and year = 2009) minus (select course_id from section where semester = 'Spring' and year = 2010);
+
+4.
+select title from course where course_id not in (select course_id from takes);
+
+5.
+select course_id from section where semester = 'Fall' and year = 2009 and course_id in (select course_id from section where semester = 'Spring' and year = 2010);
+
+6.
+select count(distinct takes.id) from takes where (course_id, sec_id, semester, year) in (select course_id, sec_id, semester, year from teaches where id = 10101);
+
+7.
+select course_id from section where semester = 'Fall' and year = 2009 and course_id not in (selec
+t course_id from section where semester = 'Spring' and year = 2010);
+
+8.
+select student.name from student where student.name in (select instructor.name from instructor);
+
+9.
+select name from instructor where salary > some(select salary from instructor where dept_name = 'Biology');
+
+10.
+select name from instructor where salary > all(select salary from instructor where dept_name = 'Biology');
+
+11.
+select dept_name, avg(salary) from instructor group by dept_name having avg(salary) >= all(select avg(salary) from instructor group by dept_name) ;
+
+12.
+select dept_name,budget from department where budget < (select avg(salary) from instructor);
+
+13. 
+select course_id from section S where S.semester = 'Fall' and S.year = 2009 and exists(select * from section T where T.semester = 'Spring' and T.year = 2010 and S.course_id = T.course_id);
+
+14.
+select S.id from student S where not exists((select course_id from course where dept_name = 'Biology') minus (select course_id from takes T where S.id = T.id));
+
+15.
+select course_id from section where year = 2009 group by course_id having count(*) <= 1;
+
+16.
+select S.id from student S where (select count(T.course_id) from takes T, course C where T.course_id = C.course_id and C.dept_name = 'Comp. Sci.' and T.id = S.id) >= 2;
