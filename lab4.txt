@@ -1,0 +1,65 @@
+1.
+select course_id, count(id) from takes group by course_id;
+
+2.
+select dept_name from student group by dept_name having count(id) > 3;
+
+3.
+select dept_name, count(course_id) from course group by dept_name;
+
+4.
+select dept_name, avg(salary) from instructor group by dept_name having avg(salary) > 42000;
+
+5.
+select course_id, sec_id, count(id) from takes where semester = 'Spring' and year = 2009 group by sec_id, course_id;
+
+6.
+select course_id, prereq_id from prereq order by course_id;
+
+7.
+select * from instructor order by salary desc;
+
+8.
+with dept_sal as (select dept_name, sum(salary) as tot_sal from instructor group by dept_name)
+select dept_name, tot_sal 
+from dept_sal
+where tot_sal = (select max(tot_sal) from dept_sal);
+
+9.
+//select dept_name, avg(salary) from instructor group by dept_name having avg(salary) > 42000;
+
+with dept_avg_sal as (select dept_name, avg(salary) as avg_sal 
+		      from instructor 
+		      group by dept_name)
+select dept_name, avg_sal 
+from dept_avg_sal 
+where avg_sal > 42000;
+
+10. 
+with sec_enroll as (select course_id, sec_id, count(id) as students 
+		    from takes 
+		    where semester = 'Spring' and year = 2010 
+		    group by sec_id, course_id)
+select course_id, sec_id, students 
+from sec_enroll 
+where students = (select max(students) 
+		  from sec_enroll);
+
+11.
+select name
+from instructor I
+where not exists(
+    select id
+    from student
+    where dept_name='Comp. Sci.'
+    minus
+    select T.id
+    from takes T,teaches E
+    where T.course_id=E.course_id and T.sec_id=E.sec_id 
+        and T.semester=E.semester and T.year=E.year 
+        and E.id=I.id
+);
+
+12.
+//incomplete
+with avg_dept_sal as (select dept_name, avg(salary) as avg_sal from instructor group by dept_name having avg_sal > 50000)
