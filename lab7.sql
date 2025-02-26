@@ -130,6 +130,7 @@ EXCEPTION
 END;
 /
 
+------------------------------------------------------------------EXERCISES-------------------------------------------------------------------------
 CREATE TABLE STUD (RNO NUMBER PRIMARY KEY, GPA NUMERIC(2, 1));
 INSERT INTO STUD VALUES(1, 5.8);
 INSERT INTO STUD VALUES(2, 6.5);
@@ -137,13 +138,149 @@ INSERT INTO STUD VALUES(3, 3.4);
 INSERT INTO STUD VALUES(4, 7.8);
 INSERT INTO STUD VALUES(5, 9.5);
 
+select * from stud;
 --1. Write a PL/SQL block to display the GPA of given student.
+SET SERVEROUTPUT ON;
 DECLARE 
     ROLL STUD.RNO%TYPE;
     GPA STUD.GPA%TYPE;
 BEGIN
-    ROLL := &ROLLNO;
+    ROLL := :ROLLNO;
     SELECT GPA INTO GPA FROM STUD WHERE ROLL = RNO;
     DBMS_OUTPUT.PUT_LINE('GPA OF '|| TO_CHAR(ROLL) || ' IS '|| TO_CHAR(GPA));
+END;
+/
+
+--2. Write a PL/SQL block to display the letter grade(0-4: F; 4-5: E; 5-6: D; 6-7: C; 7-8: B; 8-9: A; 9-10: A+) of given student. 
+SET SERVEROUTPUT ON;
+DECLARE 
+    ROLL STUD.RNO%TYPE;
+    GPA STUD.GPA%TYPE;
+    GRADE CHAR(2);
+BEGIN
+    ROLL := :ROLLNO;
+    SELECT GPA INTO GPA FROM STUD WHERE ROLL = RNO;
+    IF GPA >= 0 AND GPA < 4 THEN
+        GRADE := 'F';
+    ELSIF GPA >= 4 AND GPA < 5 THEN
+        GRADE := 'E';
+    ELSIF GPA >= 5 AND GPA < 6 THEN 
+        GRADE := 'D';
+    ELSIF GPA >= 6 AND GPA < 7 THEN
+        GRADE := 'C';
+    ELSIF GPA >= 7 AND GPA < 8 THEN
+        GRADE := 'B';
+    ELSIF GPA >= 8 AND GPA < 9 THEN
+        GRADE := 'A';
+    ELSE GRADE := 'A+';
+END IF;
+DBMS_OUTPUT.PUT_LINE('Roll number: ' || ROLL || ' Grade: ' || GRADE);
+END;
+/
+
+SELECT SYSDATE FROM DUAL;
+--3. Input the date of issue and date of return for a book. Calculate and display the fine with the appropriate message 
+--using a PL/SQL block. The fine is charged as (7 days: NIL; 8 - 15 days: Rs. 1/day; 16-30 days: Rs. 2/day; After 30 days: Rs. 5) 
+SET SERVEROUTPUT ON;
+DECLARE 
+    DOI DATE;
+    DOR DATE;
+    LATE NUMBER;
+    FINE NUMBER;
+BEGIN
+    DOI := :DATEOFISSUE;
+    DOR := :DATEOFRETURN;
+    LATE := DOR-DOI;
+    --DBMS_OUTPUT.PUT_LINE('ISSUE: '||TO_CHAR(DOI) || ' RETURN: ' || TO_CHAR(DOR) || ' LATE: ' || LATE);
+
+    IF LATE <= 7 THEN
+        FINE := 0;
+    ELSIF LATE >= 8 AND LATE < 16 THEN
+        FINE := LATE * 1;
+    ELSIF LATE >= 16 AND LATE < 30 THEN
+        FINE := LATE * 2;
+    ELSE FINE := 5;
+    END IF;
+
+    dbms_output.put_line('ISSUE: ' || TO_CHAR(DOI) || ' RETURN: ' || TO_CHAR(DOR) || ' LATE DAYS: ' || LATE || ' FINE: ' || FINE);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('NO DATA');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR OCCURRED');
+END;
+/
+
+--4. Write a PL/SQL block to print the letter grade of all the students(RollNo: 1 - 5)
+SET SERVEROUTPUT ON;
+DECLARE
+    ROLL STUD.RNO%TYPE;
+    GPA STUD.GPA%TYPE;
+    GRADE CHAR(2);
+BEGIN
+    ROLL := 1;
+    LOOP
+        SELECT GPA INTO GPA FROM STUD WHERE RNO = ROLL;
+        
+        IF GPA >= 0 AND GPA < 4 THEN
+            GRADE := 'F';
+        ELSIF GPA >= 4 AND GPA < 5 THEN
+            GRADE := 'E';
+        ELSIF GPA >= 5 AND GPA < 6 THEN 
+            GRADE := 'D';
+        ELSIF GPA >= 6 AND GPA < 7 THEN
+            GRADE := 'C';
+        ELSIF GPA >= 7 AND GPA < 8 THEN
+            GRADE := 'B';
+        ELSIF GPA >= 8 AND GPA < 9 THEN
+            GRADE := 'A';
+        ELSE 
+            GRADE := 'A+';
+        END IF;
+
+        DBMS_OUTPUT.PUT_LINE('ROLL NO.: '||ROLL || ' GPA: ' || GPA || ' GRADE: ' || GRADE);
+        ROLL := ROLL + 1;
+        IF ROLL > 5 THEN 
+            EXIT;
+        END IF;
+    END LOOP;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            DBMS_OUTPUT.PUT_LINE('NO STUDENT WITH ROLL NUMBER ' || ROLL);
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ERROR OCCURRED');
+END;
+/
+
+--5. Alter StudentTable by appending an additional column LetterGrade Varchar2(2). 
+-- Then write a PL/SQL block  to update the table with letter grade of each student.
+
+ALTER TABLE STUD ADD LETTERGRADE VARCHAR(2);
+
+SET SERVEROUTPUT ON;
+DECLARE 
+    ROLL STUD.RNO%TYPE;
+    GPA STUD.GPA%TYPE;
+    GRADE STUD.LETTERGRADE%TYPE;
+BEGIN
+    ROLL := 1;
+    WHILE ROLL <= 5 LOOP
+        SELECT GPA INTO GPA FROM STUD WHERE RNO = ROLL;
+
+        IF GPA >= 9 THEN
+            GRADE := 'A';
+        ELSIF GPA >= 7 THEN
+            GRADE := 'B';
+        ELSIF GPA >= 5 THEN
+            GRADE := 'C';
+        ELSE GRADE := 'D';
+        END IF;
+        UPDATE STUD SET LETTERGRADE = GRADE WHERE RNO = ROLL;
+        ROLL := ROLL + 1;
+    END LOOP;
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('LETTER GRADES UPDATED SUCCESSFULLY');
 END;
 /

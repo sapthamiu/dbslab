@@ -6,7 +6,7 @@ DECLARE
     rno studen.roll%TYPE := 1;
 BEGIN
     -- Start of loop
-    START_LOOP:
+    <<START_LOOP>>
     IF rno > 5 THEN
         GOTO END_LOOP;  -- Exit loop after RollNo 5
     END IF;
@@ -25,7 +25,7 @@ BEGIN
     GOTO GRADE_ASSIGN;
 
     -- Assign letter grade
-    GRADE_ASSIGN:
+    <<GRADE_ASSIGN>>
     IF gpa >= 9 THEN
         grd := 'A+';
     ELSIF gpa >= 8 THEN
@@ -52,7 +52,7 @@ BEGIN
     GOTO START_LOOP;
 
     -- Label to exit the loop
-    END_LOOP:
+    <<END_LOOP>>
     DBMS_OUTPUT.PUT_LINE('End of grade printing.');
 END;
 /
