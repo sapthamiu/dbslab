@@ -28,3 +28,5 @@ BEGIN
 
 END;
 /
+
+select * from takes;

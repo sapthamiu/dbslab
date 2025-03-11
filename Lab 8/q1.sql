@@ -1,5 +1,5 @@
 SET SERVEROUTPUT ON;
-
+create table salary_raise(instructor_id varchar(5) primary key, raise_date date, raise_amt number(8, 2), foreign key(instructor_id) references instructor);
 DECLARE
 
     CURSOR c(dname instructor.dept_name%TYPE) IS
@@ -23,3 +23,5 @@ BEGIN
     END LOOP;
 END;
 /
+
+select * from salary_raise;
