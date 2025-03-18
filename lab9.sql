@@ -30,7 +30,7 @@ end;
 --count of the number of instructors in that department. 
 create or replace function dept_count(dept_name varchar)
 return integer as 
-d_count integer;
+    d_count integer;
 begin 
     select count(*) into d_count 
     from instructor where instructor.dept_name = dept_count.dept_name;
@@ -217,9 +217,153 @@ begin
 end;
 /
 
+declare dept varchar2(50) := 'Comp. Sci.';
+begin 
+        stud_course(dept);
+end;
+/
+
+--5. Write a function to return the Square of a given number and call it from an anonymous block.
+create or replace function Square(pnum number)
+return number as 
+BEGIN 
+    return pnum * pnum;
+end;
+/
+
+declare 
+    num number := 5;
+    res number;
+begin 
+    res := Square(num);
+    dbms_output.put_line('Square of ' || num || ' is: ' || res);
+end;
+/
+
+--6. Based on the University Database Schema in Lab 2, write a Pl/Sql block of code 
+--that lists the highest paid Instructor in each of the Department. It should make use 
+--of a function department_highest which returns the highest paid Instructor for the 
+--given branch
+create or replace function dep_high (p_dept_name varchar2)
+return varchar2 as 
+    vname instructor.name%type;
+    vsal instructor.salary%type;
+begin 
+    select name, salary into vname, vsal 
+    from instructor 
+    where dept_name = p_dept_name and salary = (select max(salary)
+                                                from instructor 
+                                                where dept_name = p_dept_name);
+    return vname || ' - ' || vsal;
+end;
+/
+
+declare vhighest varchar2(100);
 begin 
     for dept in (select dept_name from department) loop 
-        stud_course(dept.dept_name);
+        vhighest := dep_high(dept.dept_name);
+        dbms_output.put_line('Department: ' || dept.dept_name);
+        dbms_output.put_line('Highest paid instructor: ' || vhighest);
     end loop;
 end;
+/
+
+--7. Based on the University Database Schema in Lab 2, create a package to include the following: 
+--    a) A named procedure to list the instructor_names of given department 
+--    b) A function which returns the max salary for the given department 
+--    c) Write a PL/SQL block to demonstrate the usage of above package components 
+
+CREATE OR REPLACE PACKAGE dept_package AS
+    PROCEDURE list_instructors(p_dept_name IN VARCHAR2);
+    FUNCTION max_salary(p_dept_name IN VARCHAR2) RETURN NUMBER;
+END dept_package;
+/
+CREATE OR REPLACE PACKAGE BODY dept_package AS
+
+    -- Procedure to list all instructors in a given department
+    PROCEDURE list_instructors(p_dept_name IN VARCHAR2) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Instructors in Department: ' || p_dept_name);
+        FOR rec IN (SELECT name FROM Instructor WHERE dept_name = p_dept_name) LOOP
+            DBMS_OUTPUT.PUT_LINE('  ' || rec.name);
+        END LOOP;
+
+        -- Handle case where no instructors exist
+        IF SQL%NOTFOUND THEN
+            DBMS_OUTPUT.PUT_LINE('  No instructors found.');
+        END IF;
+    END list_instructors;
+
+    -- Function to return the maximum salary in a given department
+    FUNCTION max_salary(p_dept_name IN VARCHAR2) RETURN NUMBER IS
+        v_max_salary NUMBER := 0;
+    BEGIN
+        SELECT MAX(salary) INTO v_max_salary FROM Instructor WHERE dept_name = p_dept_name;
+
+        -- Handle NULL case (if no instructors in department)
+        IF v_max_salary IS NULL THEN
+            RETURN 0;
+        ELSE
+            RETURN v_max_salary;
+        END IF;
+    END max_salary;
+
+END dept_package;
+/
+DECLARE
+    v_dept_name Department.dept_name%TYPE := 'Computer Science'; -- Change as needed
+    v_max_salary NUMBER;
+BEGIN
+    -- Call the procedure to list instructors
+    dept_package.list_instructors(v_dept_name);
+
+    -- Call the function to get the max salary
+    v_max_salary := dept_package.max_salary(v_dept_name);
+    DBMS_OUTPUT.PUT_LINE('Maximum Salary in ' || v_dept_name || ': ' || v_max_salary);
+END;
+/
+
+--8. Write  a  PL/SQL  procedure  to  return  simple  and  compound  interest  (OUT 
+--parameters) along with the Total Sum (IN OUT) i.e. Sum of Principle and Interest 
+--taking as input the principle, rate of interest and number of years (IN parameters). 
+--Call this procedure from an anonymous block
+
+CREATE OR REPLACE PROCEDURE calc_interest (
+    p_principal IN NUMBER,
+    p_rate IN NUMBER,
+    p_years IN NUMBER,
+    p_simple OUT NUMBER,
+    p_compound OUT NUMBER,
+    p_total IN OUT NUMBER
+) IS
+BEGIN
+    -- Calculate Simple Interest
+    p_simple := (p_principal * p_rate * p_years) / 100;
+    
+    -- Calculate Compound Interest (compounded annually)
+    p_compound := p_principal * POWER((1 + p_rate / 100), p_years) - p_principal;
+
+    -- Update Total Sum (Principal + Interest)
+    p_total := p_principal + p_compound;
+END;
+/
+DECLARE
+    v_principal NUMBER := 10000;  -- Example Principal Amount
+    v_rate NUMBER := 5;           -- Example Interest Rate (5%)
+    v_years NUMBER := 3;          -- Example Time Period in Years
+    v_simple NUMBER;              -- Variable to hold Simple Interest
+    v_compound NUMBER;            -- Variable to hold Compound Interest
+    v_total NUMBER;               -- Variable to hold Total Sum
+BEGIN
+    -- Initialize total with principal amount
+    v_total := v_principal;
+
+    -- Call the procedure
+    calc_interest(v_principal, v_rate, v_years, v_simple, v_compound, v_total);
+
+    -- Display the results
+    DBMS_OUTPUT.PUT_LINE('Simple Interest: ' || v_simple);
+    DBMS_OUTPUT.PUT_LINE('Compound Interest: ' || v_compound);
+    DBMS_OUTPUT.PUT_LINE('Total Sum (Principal + Compound Interest): ' || v_total);
+END;
 /
