@@ -134,6 +134,92 @@ end;
 --instructors associated with the department as well as list all the 
 --courses offered by the department. Also, write an anonymous block 
 --with the procedure call.
-create or replace procedure listinst(dept_name instructor.dept_name%type) IS
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE PROCEDURE Get_Dept_Details(p_dept_name IN VARCHAR2)IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Instructors in Department: ' || p_dept_name);
+    FOR rec IN (SELECT ID, name, salary FROM Instructor WHERE dept_name = p_dept_name) LOOP
+        DBMS_OUTPUT.PUT_LINE('ID: ' || rec.ID || ', Name: ' || rec.name || ', Salary: ' || rec.salary);
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('Courses offered by Department: ' || p_dept_name);
+    FOR rec IN (SELECT course_id, title, credits FROM Course WHERE dept_name = p_dept_name) 
+    LOOP
+        DBMS_OUTPUT.PUT_LINE('Course ID: ' || rec.course_id || ', Title: ' || rec.title || ', Credits: ' || rec.credits);
+    END LOOP;
+END;
+/
+
+DECLARE
+    v_dept_name VARCHAR2(50) := 'Comp. Sci.'; 
+BEGIN
+    Get_Dept_Details(v_dept_name);
+END;
+/
+
+--3. Based on the University Database Schema in Lab 2, write a Pl/Sql block of code that lists the most popular course 
+--(highest number of students take it) for each of the departments. It should make use of a procedure course_popular which  
+--finds the most popular course in the given department. 
+
+SET SERVEROUTPUT ON;
+
+CREATE VIEW Enrols AS
+SELECT t.course_id, c.title, c.dept_name, COUNT(t.ID) AS student_count
+FROM Takes t
+JOIN Course c on t.course_id = c.course_id
+GROUP BY t.course_id, c.title, c.dept_name;
+
+CREATE OR REPLACE PROCEDURE course_popular (p_dept_name IN VARCHAR2) IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Department: ' || p_dept_name);
+    FOR rec IN (
+        SELECT course_id, title, student_count
+        FROM Enrols
+        WHERE dept_name = p_dept_name
+        AND student_count = (
+            SELECT MAX(student_count) 
+            FROM Enrols 
+            WHERE dept_name = p_dept_name
+        )
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('Most Popular Course: ' || rec.course_id || ' - ' || rec.title);
+        DBMS_OUTPUT.PUT_LINE('Total Students Enrolled: ' || rec.student_count);
+    END LOOP;
+END;
+/
+BEGIN
+    FOR rec IN (SELECT dept_name FROM Department) 
+    LOOP
+        course_popular(rec.dept_name);
+    END LOOP;
+END;
+/
+
+--4. Based on the University Database Schema in Lab 2, write a procedure which takes 
+--the  dept-name  as  input  parameter  and  lists  all  the  students  associated  with  the 
+--department as well as list all the courses offered by the department. Also, write an 
+--anonymous block with the procedure call
+set serveroutput on;
+create or replace procedure stud_course(p_dept_name IN varchar2) is 
 begin 
-    cursor c is select * from instructor 
+    dbms_output.put_line('Department: '|| p_dept_name);
+    dbms_output.put_line('Students in '|| p_dept_name || ': ');
+    for stud in (select id, name from student where dept_name = p_dept_name) loop 
+        dbms_output.put_line(stud.id || ' - ' || stud.name || ' ');
+    end loop;
+    dbms_output.put_line('Courses offered by '||p_dept_name||': ');
+    for cour in (select course_id, title from course where dept_name = p_dept_name) loop 
+        dbms_output.put_line(cour.course_id || ' - ' || cour.title || ' ');
+    end loop;
+    if sql%notfound then dbms_output.put_line('No students or courses found for this dept.');
+    end if;
+end;
+/
+
+begin 
+    for dept in (select dept_name from department) loop 
+        stud_course(dept.dept_name);
+    end loop;
+end;
+/
