@@ -272,55 +272,44 @@ end;
 --    a) A named procedure to list the instructor_names of given department 
 --    b) A function which returns the max salary for the given department 
 --    c) Write a PL/SQL block to demonstrate the usage of above package components 
-
-CREATE OR REPLACE PACKAGE dept_package AS
-    PROCEDURE list_instructors(p_dept_name IN VARCHAR2);
-    FUNCTION max_salary(p_dept_name IN VARCHAR2) RETURN NUMBER;
-END dept_package;
+create or replace package dept_pack as 
+    procedure list_inst (p_dept_name varchar2);
+    function max_sal (p_dept_name varchar2) return number;
+end dept_pack;
 /
-CREATE OR REPLACE PACKAGE BODY dept_package AS
 
-    -- Procedure to list all instructors in a given department
-    PROCEDURE list_instructors(p_dept_name IN VARCHAR2) IS
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Instructors in Department: ' || p_dept_name);
-        FOR rec IN (SELECT name FROM Instructor WHERE dept_name = p_dept_name) LOOP
-            DBMS_OUTPUT.PUT_LINE('  ' || rec.name);
-        END LOOP;
+create or replace package body dept_pack as 
+    procedure list_inst (p_dept_name varchar2) is 
+    begin 
+        dbms_output.put_line('Instructors in dept.: ' || p_dept_name);
+        for rec in (select name from instructor where dept_name = p_dept_name) loop
+            dbms_output.put_line(' ' || rec.name);
+        end loop;
+        if sql%notfound then 
+            dbms_output.put_line(' No instructors found');
+        end if;
+    end;
 
-        -- Handle case where no instructors exist
-        IF SQL%NOTFOUND THEN
-            DBMS_OUTPUT.PUT_LINE('  No instructors found.');
-        END IF;
-    END list_instructors;
-
-    -- Function to return the maximum salary in a given department
-    FUNCTION max_salary(p_dept_name IN VARCHAR2) RETURN NUMBER IS
-        v_max_salary NUMBER := 0;
-    BEGIN
-        SELECT MAX(salary) INTO v_max_salary FROM Instructor WHERE dept_name = p_dept_name;
-
-        -- Handle NULL case (if no instructors in department)
-        IF v_max_salary IS NULL THEN
-            RETURN 0;
-        ELSE
-            RETURN v_max_salary;
-        END IF;
-    END max_salary;
-
-END dept_package;
+    function max_sal (p_dept_name varchar2) 
+    return number as 
+        v_maxsal number := 0;
+    begin 
+        select max(salary) into v_maxsal from instructor where dept_name = p_dept_name;
+        if v_maxsal is null then return 0;
+        else return v_maxsal;
+        end if;
+    end;
+end dept_pack;
 /
-DECLARE
-    v_dept_name Department.dept_name%TYPE := 'Computer Science'; -- Change as needed
-    v_max_salary NUMBER;
-BEGIN
-    -- Call the procedure to list instructors
-    dept_package.list_instructors(v_dept_name);
 
-    -- Call the function to get the max salary
-    v_max_salary := dept_package.max_salary(v_dept_name);
-    DBMS_OUTPUT.PUT_LINE('Maximum Salary in ' || v_dept_name || ': ' || v_max_salary);
-END;
+declare 
+    v_dept_name Department.dept_name%type := 'Comp. Sci.';
+    v_maxsal number;
+begin 
+    dept_pack.list_inst(v_dept_name);
+    v_maxsal := dept_pack.max_sal(v_dept_name);
+    dbms_output.put_line('Max salary in ' || v_dept_name || ': ' || v_maxsal);
+end;
 /
 
 --8. Write  a  PL/SQL  procedure  to  return  simple  and  compound  interest  (OUT 
@@ -329,41 +318,41 @@ END;
 --Call this procedure from an anonymous block
 
 CREATE OR REPLACE PROCEDURE calc_interest (
-    p_principal IN NUMBER,
-    p_rate IN NUMBER,
-    p_years IN NUMBER,
-    p_simple OUT NUMBER,
-    p_compound OUT NUMBER,
-    p_total IN OUT NUMBER
+    p IN NUMBER,
+    r IN NUMBER,
+    t IN NUMBER,
+    s OUT NUMBER,
+    c OUT NUMBER,
+    total IN OUT NUMBER
 ) IS
 BEGIN
     -- Calculate Simple Interest
-    p_simple := (p_principal * p_rate * p_years) / 100;
+    s := (p * r * t) / 100;
     
     -- Calculate Compound Interest (compounded annually)
-    p_compound := p_principal * POWER((1 + p_rate / 100), p_years) - p_principal;
+    c := p * POWER((1 + r / 100), t) - p;
 
     -- Update Total Sum (Principal + Interest)
-    p_total := p_principal + p_compound;
+    total := p + c;
 END;
 /
 DECLARE
-    v_principal NUMBER := 10000;  -- Example Principal Amount
-    v_rate NUMBER := 5;           -- Example Interest Rate (5%)
-    v_years NUMBER := 3;          -- Example Time Period in Years
-    v_simple NUMBER;              -- Variable to hold Simple Interest
-    v_compound NUMBER;            -- Variable to hold Compound Interest
+    v_p NUMBER := 10000;  -- Example Principal Amount
+    v_r NUMBER := 5;           -- Example Interest Rate (5%)
+    v_t NUMBER := 3;          -- Example Time Period in Years
+    v_s NUMBER;              -- Variable to hold Simple Interest
+    v_c NUMBER;            -- Variable to hold Compound Interest
     v_total NUMBER;               -- Variable to hold Total Sum
 BEGIN
     -- Initialize total with principal amount
-    v_total := v_principal;
+    v_total := v_p;
 
     -- Call the procedure
-    calc_interest(v_principal, v_rate, v_years, v_simple, v_compound, v_total);
+    calc_interest(v_p, v_r, v_t, v_s, v_c, v_total);
 
     -- Display the results
-    DBMS_OUTPUT.PUT_LINE('Simple Interest: ' || v_simple);
-    DBMS_OUTPUT.PUT_LINE('Compound Interest: ' || v_compound);
+    DBMS_OUTPUT.PUT_LINE('Simple Interest: ' || v_s);
+    DBMS_OUTPUT.PUT_LINE('Compound Interest: ' || v_c);
     DBMS_OUTPUT.PUT_LINE('Total Sum (Principal + Compound Interest): ' || v_total);
 END;
 /
