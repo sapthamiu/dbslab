@@ -23,7 +23,6 @@ create table department
 	 budget		numeric(12,2) check (budget > 0),
 	 primary key (dept_name)
 	);
-
 create table course
 	(course_id		varchar(8), 
 	 title		varchar(50), 

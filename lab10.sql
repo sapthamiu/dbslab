@@ -65,7 +65,8 @@ begin
     end if;
 end;
 /
-
+--test
+insert into instructor values(2, 'Mark1', 'Physics', 80000);
 
 --4.  Create a transparent audit system for a table Client_master (client_no, name, address, Bal_due). 
 --The system must keep track of the records that are being deleted or updated. The functionality 
@@ -106,37 +107,33 @@ select * from auditclient;
 --corresponding entries in Advisor table. 
 
 CREATE OR REPLACE VIEW Advisor_Student AS
-    SELECT s.s_id AS student_id, s.name AS student_name, 
-           a.i_id AS instructor_id, i.name AS instructor_name
-    FROM Advisor a
-    NATURAL JOIN Student s
-    NATURAL JOIN Instructor i;
+    SELECT s_id AS student_id, s.name AS student_name, i_id AS instructor_id, i.name AS instructor_name
+    FROM Advisor JOIN Student s on s_id=s.id JOIN Instructor i on i_id=i.id;
 
-CREATE OR REPLACE TRIGGER delete_advisor_insteadof
+CREATE OR REPLACE TRIGGER delete_advisor
 INSTEAD OF DELETE ON Advisor_Student
 FOR EACH ROW
 BEGIN
-    -- Delete the corresponding record from the Advisor table
     DELETE FROM Advisor
     WHERE s_id = :OLD.student_id AND i_id = :OLD.instructor_id;
 END;
 /
 --test
--- Sample data for Student table
-INSERT INTO Student (s_id, name, dept_name, tot_cred)
-VALUES (1, 'John Doe', 'Computer Science', 30);
+INSERT INTO Student VALUES (1, 'John Doe', 'Comp. Sci.', 30);
 
--- Sample data for Instructor table
-INSERT INTO Instructor (i_id, name, dept_name, salary)
-VALUES (101, 'Dr. Smith', 'Computer Science', 70000);
+INSERT INTO Instructor VALUES (101, 'Dr. Smith', 'Comp. Sci.', 70000);
 
--- Sample data for Advisor table
-INSERT INTO Advisor (s_id, i_id)
-VALUES (1, 101);
+INSERT INTO Advisor VALUES (1, 101);
+
+SELECT * FROM Advisor;
 
 SELECT * FROM Advisor_Student;
 
-DELETE FROM Advisor_Student
-WHERE student_id = 1 AND instructor_id = 101;
+DELETE FROM Advisor_Student WHERE student_id = 1 AND instructor_id = 101;
 
 SELECT * FROM Advisor;
+
+
+
+
+
