@@ -1,5 +1,5 @@
 drop table prereq;
-drop table time_slot;
+drop table time_slot1;
 drop table advisor;
 drop table takes;
 drop table student;
@@ -51,7 +51,7 @@ create table section
 	 year	numeric(4,0) check (year > 1701 and year < 2100), 
 	 building		varchar(15),
 	 room_number	varchar(7),
-	 time_slot_id	varchar(4),
+	 time_slot1_id	varchar(4),
 	 primary key (course_id, sec_id, semester, year),
 	 foreign key (course_id) references course
 		on delete cascade,
@@ -102,14 +102,14 @@ create table advisor
 		on delete cascade
 	);
 
-create table time_slot
-	(time_slot_id		varchar(4),
+create table time_slot1
+	(time_slot1_id		varchar(4),
 	 day			varchar(1),
 	 start_hr		numeric(2) check (start_hr >= 0 and start_hr < 24),
 	 start_min		numeric(2) check (start_min >= 0 and start_min < 60),
 	 end_hr		numeric(2) check (end_hr >= 0 and end_hr < 24),
 	 end_min		numeric(2) check (end_min >= 0 and end_min < 60),
-	 primary key (time_slot_id, day, start_hr, start_min)
+	 primary key (time_slot1_id, day, start_hr, start_min)
 	);
 
 create table prereq

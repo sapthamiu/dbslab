@@ -45,10 +45,10 @@ DECLARE
     VDNAME DEPARTMENT.DEPT_NAME%TYPE;
 BEGIN
     FOR DEPT IN C1 LOOP
-    IF DEPT.BUDGET > VBUDGET THEN
-        VBUDGET := DEPT.BUDGET;
-        VDNAME := DEPT.DEPT_NAME;
-    END IF;
+        IF DEPT.BUDGET > VBUDGET THEN
+            VBUDGET := DEPT.BUDGET;
+            VDNAME := DEPT.DEPT_NAME;
+        END IF;
     END LOOP;
     DBMS_OUTPUT.PUT_LINE('MAX BUDGET: ' || VBUDGET || ' DEPT: ' || VDNAME);
     END;
@@ -92,6 +92,7 @@ BEGIN
     END LOOP;
 END;
 /
+
 
 --EX6 Consider account (account_number, balance) table, populated with 
 --{(1, 200); (2, 3000); (3, 500)}. Withdraw an amount 200 and deposit 
