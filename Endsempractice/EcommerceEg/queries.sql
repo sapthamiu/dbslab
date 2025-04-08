@@ -49,42 +49,99 @@ from customer natural join orders
 --where to_char(order_date, 'YYYY-MM-DD') = '2024-03-03';
 where order_date = date '2024-03-03';
 -- 4. List all orders along with the name of the customer who placed them.
-
+select orderitem_id, order_id, product_id, quantity, order_date, name 
+from orderitem natural join orders natural join customer;
 -- 5. Display all products in each order using `OrderID`.
-
+select order_id, product_id, name 
+from orderitem natural join product
+order by order_id;
 
 -- Intermediate (Joins, Aggregates, Grouping):
 
 -- 6. For each order, show the total number of items purchased (sum of quantities).
+select order_id, sum(quantity)
+from orderitem 
+group by order_id;
 -- 7. List all orders with their total order value (price * quantity of each product).
+select order_id, sum(quantity * price) 
+from orderitem natural join product 
+group by order_id;
 -- 8. Find the number of orders each customer has placed.
+select customer_id, count(order_id)
+from orders
+group by customer_id;
 -- 9. Show the average product price in each category.
+select category, avg(price)
+from product 
+group by category;
 -- 10. Get the list of customers who have ordered more than 5 items in total.
-
+select customer_id, count(quantity)
+from orders natural join orderitem 
+group by customer_id 
+having count(orderitem_id) > 3;
 
 -- Advanced (Subqueries, Nested Joins, Group Filters):
 
 -- 11. List customers who have **never placed any order**.
+select customer_id, name
+from customer left join orders using (customer_id)
+where order_id is null;
 -- 12. List products that have **never been ordered**.
+select product_id, name 
+from product left join orderitem using (product_id) 
+where orderitem_id is null;
 -- 13. Show the names of customers who ordered at least **one product** from the **'Clothing'** category.
+select c.name, p.name 
+from customer c join orders using(customer_id) 
+join orderitem using (order_id)
+join product p using (product_id) 
+where p.category = 'Clothing';
 -- 14. Find orders that contain **more than 3 different products**.
+select order_id, count(distinct product_id)
+from orderitem 
+group by order_id 
+having count(product_id) > 1;
 -- 15. For each customer, show the **total number of distinct products** they have ordered.
-
--- ---
+select customer_id, count(distinct product_id) 
+from orders natural join orderitem 
+group by customer_id;
 
 -- Date-Based + Shipment Logic:
 
 -- 16. Show all orders that were shipped **within 3 days** of ordering.
+select order_id
+from shipment natural join orders 
+where shipment_date - order_date <= 3;
 -- 17. List all carriers that have shipped **more than 10 orders**.
+select carrier, count(order_id)
+from shipment 
+group by carrier
+having count(order_id) >= 2;
 -- 18. Find the earliest shipment date for each customer.
+select customer_id, min(shipment_date)
+from shipment natural join orders 
+group by customer_id;
 -- 19. List all products shipped by the carrier `'BlueDart'`.
+select product_id, name, sum(quantity)
+from shipment natural join orderitem natural join product 
+where carrier = 'BlueDart'
+group by product_id, name;
 -- 20. Identify orders that haven’t been shipped yet.
-
-
+select order_id 
+from orders left join shipment using (order_id)
+where shipment_id is null;
 -- Challenge Mode (Flex your SQL muscles):
 
 -- 21. List customers who have **only ordered products in a single category**.
+select customer_id, min(category)
+from orders natural join orderitem natural join product 
+group by customer_id
+having count(category) = 1;
 -- 22. Show the **top 3 most frequently ordered products**.
+select count(product_id) 
+from orderitem 
+
+
 -- 23. Identify the customer who spent the **most money** in total.
 -- 24. List all customers who have ordered the **same product more than once** (even in different orders).
 -- 25. Find all orders where the **total value exceeds ₹50,000**, and list the order ID, customer name, and total value.
